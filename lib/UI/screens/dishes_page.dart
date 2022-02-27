@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:next_meal/blocs/dishes_bloc.dart';
 import 'package:next_meal/models/dish.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DishesPage extends StatelessWidget {
   DishesPage({Key? key, required this.title}) : super(key: key);
@@ -62,6 +63,10 @@ class DishesPage extends StatelessWidget {
   Widget dishItem(Dish dish) {
     final Widget dismissibleCard = Dismissible(
       background: Container(
+        decoration: BoxDecoration(
+          color: Colors.purple.shade100,
+          borderRadius: BorderRadius.circular(5),
+        ),
         child: const Padding(
           padding: EdgeInsets.only(left: 10),
           child: Align(
@@ -72,7 +77,6 @@ class DishesPage extends StatelessWidget {
             ),
           ),
         ),
-        color: Colors.purple.shade100,
       ),
       onDismissed: (direction) {
         dishesBloc.deleteDishById(dish.id!);
@@ -85,10 +89,15 @@ class DishesPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(5),
         ),
         color: Colors.white,
-        child: ListTile (
+        child: ListTile (contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
           title:  Text(dish.name,
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),),
-          subtitle: Text(dish.description ?? "None"),
+          subtitle: GestureDetector(
+            child: Text(dish.description ?? "None", style: const TextStyle(decoration: TextDecoration.underline, color: Colors.blue)),
+            onTap: () async {
+              if (await launch(dish.description ?? "None")) throw 'Could not launch $dish.description';
+            },
+          )
         )
       ),
     );
