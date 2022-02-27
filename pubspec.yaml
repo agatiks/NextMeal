@@ -36,6 +36,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   salomon_bottom_bar: ^3.2.0
   rxdart: ^0.27.3
+  provider: ^6.0.2
+  sqflite: ^2.0.2
+  path_provider: ^2.0.9
+
 
 dev_dependencies:
   flutter_test:

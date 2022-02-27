@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:next_meal/UI/selected_item_event.dart';
+import 'package:next_meal/blocs/events/selected_item_event.dart';
 
 class NavigationBloc{
   int _selectedItem = 0;

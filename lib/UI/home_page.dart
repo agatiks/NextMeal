@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:next_meal/UI/screens/dishes_page.dart';
 import 'package:next_meal/UI/screens/generate_page.dart';
 import 'package:next_meal/UI/screens/personal_page.dart';
-import 'package:next_meal/UI/selected_item_event.dart';
+import 'package:next_meal/blocs/events/selected_item_event.dart';
 import 'package:next_meal/blocs/navigation_bloc.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
@@ -49,35 +49,42 @@ class HomePage extends StatelessWidget{
                   SalomonBottomBarItem(
                     icon: const Icon(Icons.all_inclusive),
                     title: const Text("Generate"),
-                    selectedColor: Colors.teal,
+                    selectedColor: Colors.purple,
                   ),
 
                   ///Personal
                   SalomonBottomBarItem(
                     icon: const Icon(Icons.person),
                     title: const Text("Personal"),
-                    selectedColor: Colors.amber,
+                    selectedColor: Colors.purple,
                   ),
                 ],
               ),
             ),
-            body: getBody(snapshot),
+            body: getBody(context, snapshot),
           );
         }
     );
   }
 
-  getBody(AsyncSnapshot<Object?> snapshot) {
+  getBody(BuildContext context, AsyncSnapshot<Object?> snapshot) {
     var currPage = int.parse(snapshot.data.toString());
+    var page;
     if ( currPage == 0) {
-      return const DishesPage();
-      //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => const DishesPage()));
+      page = DishesPage(title: 'Dishes',);
+      //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => page));
+      return page;
+
     } else if (currPage == 1) {
-      //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => const GeneratePage()));
-      return const GeneratePage();
+      page = GeneratePage();
+      //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => page));
+      return page;
+
     } else{
-      return const PersonalPage();
-      //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => const PersonalPage()));
+      page = PersonalPage();
+      //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => page));
+      return page;
+
     }
   }
 }
