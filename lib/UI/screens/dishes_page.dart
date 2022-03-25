@@ -4,11 +4,10 @@ import 'package:next_meal/blocs/dishes_bloc.dart';
 import 'package:next_meal/models/dish.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class DishesPage extends StatelessWidget {
-  DishesPage({Key? key, required this.title}) : super(key: key);
+class DishesPage extends StatelessWidget{
+  DishesPage({Key? key}) : super(key: key);
 
   final DishesBloc dishesBloc = DishesBloc();
-  final String title;
   final DismissDirection _dismissDirection = DismissDirection.horizontal;
 
   @override
@@ -23,9 +22,6 @@ class DishesPage extends StatelessWidget {
     return StreamBuilder(
       stream: dishesBloc.dishes,
       builder: (BuildContext context, AsyncSnapshot<Map<String, List<Dish>>> snapshot) {
-        if (kDebugMode) {
-          print(snapshot);
-        }
         return Column(
           children: [
             FloatingActionButton.extended(
@@ -71,20 +67,20 @@ class DishesPage extends StatelessWidget {
     return Column(
       children: [
         Text(category),
-        SizedBox(height: 16.0,),
+        const SizedBox(height: 16.0,),
         ListView.builder(
           shrinkWrap: true,
             scrollDirection: Axis.vertical,
             itemCount: categoryList.length,
             itemBuilder: (context, itemPosition) {
-              return dishItem(categoryList[itemPosition]);
+              return dishItem(context, categoryList[itemPosition]);
             },
           ),
       ],
     );
   }
 
-  Widget dishItem(Dish dish) {
+  Widget dishItem(BuildContext context, Dish dish) {
     final Widget dismissibleCard = Dismissible(
       background: Container(
         decoration: BoxDecoration(
@@ -114,24 +110,27 @@ class DishesPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(5),
           ),
           color: Colors.white,
-          child: ListTile(
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-              title: Text(
-                dish.name,
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-              ),
-              subtitle: GestureDetector(
-                child: Text(dish.url ?? "None",
-                    style: const TextStyle(
-                        decoration: TextDecoration.underline,
-                        color: Colors.blue)),
-                onTap: () async {
-                  if (await launch(dish.url ?? "None"))
-                    throw 'Could not launch $dish.description';
-                },
-              ))),
+          child: InkWell(
+            onTap: () => updateDishSheet(context, dish),
+            child: ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                title: Text(
+                  dish.name,
+                  style:
+                      const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                ),
+                subtitle: GestureDetector(
+                  child: Text(dish.url ?? "None",
+                      style: const TextStyle(
+                          decoration: TextDecoration.underline,
+                          color: Colors.blue)),
+                  onTap: () async {
+                    if (await launch(dish.url ?? "None"))
+                      throw 'Could not launch $dish.description';
+                  },
+                )),
+          )),
     );
     return dismissibleCard;
   }
@@ -234,5 +233,84 @@ class DishesPage extends StatelessWidget {
 
   dispose() {
     dishesBloc.dispose();
+  }
+
+  void updateDishSheet(BuildContext context, Dish dish) {
+      final _dishNameFormController = TextEditingController();
+      final _dishUrlFormController = TextEditingController();
+      final _dishCategoryFormController = TextEditingController();
+      showModalBottomSheet(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25.0))),
+          backgroundColor: Colors.white,
+          isScrollControlled: true,
+          builder: (context) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const SizedBox(
+                  height: 16.0,
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Text(
+                    'Update dish',
+                    style:
+                    TextStyle(fontSize: 21, fontWeight: FontWeight.w400),
+                  ),
+                ),
+                const SizedBox(
+                  height: 8.0,
+                ),
+                TextField(
+                  //initialValue: dish.name,
+                  autofocus: true,
+                  controller: _dishNameFormController..text = dish.name,
+                ),
+                const SizedBox(
+                  height: 8.0,
+                ),
+                TextField(
+                  decoration: const InputDecoration(hintText: 'URL'),
+                  autofocus: true,
+                  controller: _dishUrlFormController..text = dish.url ?? '',
+                ),
+                const SizedBox(
+                  height: 8.0,
+                ),
+                TextField(
+                  autofocus: true,
+                  controller: _dishCategoryFormController..text = dish.category,
+                ),
+                const SizedBox(
+                  height: 8.0,
+                ),
+                Padding(
+                    padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom),
+                    child: Center(
+                      child: FloatingActionButton.extended(
+                          onPressed: () {
+                            final newDish = Dish(
+                              name: _dishNameFormController.value.text,
+                              url: _dishUrlFormController.value.text,
+                              category:
+                              _dishCategoryFormController.value.text,
+                            );
+                            if (newDish.name.isNotEmpty && newDish.category.isNotEmpty) {
+                              dishesBloc.updateDish(newDish);
+
+                              //dismisses the bottomsheet
+                              Navigator.pop(context);
+                            }
+                          },
+                          label: const Text('update')),
+                    )),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ), context: context);
   }
 }

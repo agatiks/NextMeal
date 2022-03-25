@@ -22,7 +22,7 @@ class DishesBloc {
     getDishes();
   }
 
-  updateTodo(Dish dish) async {
+  updateDish(Dish dish) async {
     await _dishesRepository.updateDish(dish);
     getDishes();
   }

@@ -6,7 +6,7 @@ import 'package:next_meal/blocs/events/selected_item_event.dart';
 import 'package:next_meal/blocs/navigation_bloc.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
-class HomePage extends StatelessWidget{
+class HomePage extends StatelessWidget {
   final _navigationBloc = NavigationBloc();
 
   HomePage({Key? key}) : super(key: key);
@@ -37,7 +37,6 @@ class HomePage extends StatelessWidget{
                     _navigationBloc.selectedItem_event_sink.add(
                         SelectedItemEvent(i)),
                 items: [
-
                   /// Dishes
                   SalomonBottomBarItem(
                     icon: const Icon(Icons.dinner_dining),
@@ -61,30 +60,19 @@ class HomePage extends StatelessWidget{
                 ],
               ),
             ),
-            body: getBody(context, snapshot),
+            body: getBody(int.parse(snapshot.data.toString())),
           );
         }
     );
   }
 
-  getBody(BuildContext context, AsyncSnapshot<Object?> snapshot) {
-    var currPage = int.parse(snapshot.data.toString());
-    var page;
-    if ( currPage == 0) {
-      page = DishesPage(title: 'Dishes');
-      //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => page));
-      return page;
-
-    } else if (currPage == 1) {
-      page = GeneratePage();
-      //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => page));
-      return page;
-
+  getBody(int item) {
+    if (item == 0) {
+      return DishesPage();
+    } else if (item == 1) {
+      return GeneratePage();
     } else{
-      page = PersonalPage();
-      //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => page));
-      return page;
-
+      return PersonalPage();
     }
   }
 }

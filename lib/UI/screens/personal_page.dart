@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 class PersonalPage extends StatelessWidget{
-  const PersonalPage({Key? key}) : super(key: key);
+  PersonalPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

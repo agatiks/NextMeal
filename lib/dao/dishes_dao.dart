@@ -25,13 +25,18 @@ class DishesDao {
       return dishes;
   }
 
-  Future<Map<String, List<Dish>>> getCategorizedDishes() async {
+  Future<List<String>> getCategories() async {
     final db = await dbProvider.database;
     var rawCategories = await db.rawQuery('SELECT category FROM Dishes GROUP BY category');
     List<String> categories = rawCategories.isNotEmpty?
-        rawCategories.map((e) => e['category'].toString()).toList():
-        [];
-    print("****************$categories");
+    rawCategories.map((e) => e['category'].toString()).toList():
+    [];
+    return categories;
+  }
+
+  Future<Map<String, List<Dish>>> getCategorizedDishes() async {
+    final db = await dbProvider.database;
+    List<String> categories = await getCategories();
     Map<String, List<Dish>> res = {};
     for (String category in categories) {
       var rawCategoryDishes = await db.query(dishesTABLE,
@@ -43,18 +48,6 @@ class DishesDao {
           : [];
       res[category] = categoryDishes;
     }
-
-    /*print(result);
-    List<Entry> dishes = result.isNotEmpty?
-        result.map((category) {
-          var rawCategoryDishes = await db.querySelector('category = $category');
-          List<Dish> categoryDishes = rawCategoryDishes.isNotEmpty
-              ? rawCategoryDishes.map((item) => Dish.fromDatabaseJson(item)).toList()
-              : [];
-          return Entry(KeyCode.S = category, categoryDishes)
-        }).
-        : {};
-    return dishes;*/
     return res;
   }
 
