@@ -1,19 +1,22 @@
 class Dish {
   int? id;
   String name;
-  String? description;
+  String category;
+  String? url;
 
-  Dish({this.id, required this.name, this.description});
+  Dish({this.id, required this.name, required this.category, this.url});
 
   factory Dish.fromDatabaseJson(Map<String, dynamic> data) => Dish(
     id: data['id'],
     name: data['name'],
-    description: data['description'],
+    url: data['url'],
+    category: data['category']
   );
 
   Map<String, dynamic> toDatabaseJson() => {
     "id": id,
     "name": name,
-    "description": description,
+    "url": url,
+    "category": category,
   };
 }

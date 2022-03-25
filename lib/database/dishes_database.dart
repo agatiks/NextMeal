@@ -36,7 +36,8 @@ class DatabaseProvider {
     await database.execute("CREATE TABLE $dishesTABLE ("
         "id INTEGER PRIMARY KEY, "
         "name TEXT, "
-        "description TEXT "
+        "url TEXT, "
+        "category TEXT"
         ")");
   }
 }

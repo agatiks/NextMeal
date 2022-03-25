@@ -71,7 +71,7 @@ class HomePage extends StatelessWidget{
     var currPage = int.parse(snapshot.data.toString());
     var page;
     if ( currPage == 0) {
-      page = DishesPage(title: 'Dishes',);
+      page = DishesPage(title: 'Dishes');
       //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => page));
       return page;
 

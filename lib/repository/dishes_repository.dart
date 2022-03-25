@@ -6,6 +6,8 @@ class DishesRepository {
 
   Future getAllDishes({String? query}) => dishesDao.getDishes(query: query);
 
+  Future getCategorizedDishes() => dishesDao.getCategorizedDishes();
+
   Future addDish(Dish dish) => dishesDao.addDish(dish);
 
   Future updateDish(Dish dish) => dishesDao.updateDish(dish);

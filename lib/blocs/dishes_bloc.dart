@@ -5,7 +5,7 @@ import 'package:next_meal/repository/dishes_repository.dart';
 
 class DishesBloc {
   final _dishesRepository = DishesRepository();
-  final _dishesController = StreamController<List<Dish>>.broadcast();
+  final _dishesController = StreamController<Map<String, List<Dish>>>.broadcast();
 
   get dishes => _dishesController.stream;
 
@@ -14,7 +14,7 @@ class DishesBloc {
   }
 
   getDishes({String? query}) async {
-    _dishesController.sink.add(await _dishesRepository.getAllDishes(query: query));
+    _dishesController.sink.add(await _dishesRepository.getCategorizedDishes());
   }
 
   addDish(Dish dish) async {
@@ -31,6 +31,8 @@ class DishesBloc {
     _dishesRepository.deleteDishById(id);
     getDishes();
   }
+
+
 
   dispose() {
     _dishesController.close();

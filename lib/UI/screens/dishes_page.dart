@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:next_meal/blocs/dishes_bloc.dart';
 import 'package:next_meal/models/dish.dart';
@@ -21,11 +22,15 @@ class DishesPage extends StatelessWidget {
   Widget dishesWidget() {
     return StreamBuilder(
       stream: dishesBloc.dishes,
-      builder: (BuildContext context, AsyncSnapshot<List<Dish>> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<Map<String, List<Dish>>> snapshot) {
+        if (kDebugMode) {
+          print(snapshot);
+        }
         return Column(
           children: [
             FloatingActionButton.extended(
-                label: const Text("add"), onPressed: () => addDishSheet(context)),
+                label: const Text("add"),
+                onPressed: () => addDishSheet(context)),
             const SizedBox(height: 8.0),
             dishListWidget(snapshot),
           ],
@@ -34,30 +39,49 @@ class DishesPage extends StatelessWidget {
     );
   }
 
-  Widget dishListWidget(AsyncSnapshot<List<Dish>> snapshot) {
+  Widget dishListWidget(AsyncSnapshot<Map<String, List<Dish>>> snapshot) {
     if (snapshot.hasData) {
       return (snapshot.data!.isNotEmpty)
           ? Flexible(
-        child: ListView.builder(
-          scrollDirection: Axis.vertical,
-          itemCount: snapshot.data!.length,
-          itemBuilder: (context, itemPosition) {
-            Dish dish = snapshot.data![itemPosition];
-            return dishItem(dish);
-          },
-        ),
-      )
+            child: ListView.builder(
+              shrinkWrap: true,
+              scrollDirection: Axis.vertical,
+              itemCount: snapshot.data?.length,
+              itemBuilder: (context, itemPosition) {
+                Map<String, List<Dish>> content = snapshot.data!;
+                String curKey = content.keys.toList()[itemPosition];
+                return categoryListWidget(curKey, content[curKey] ?? []);
+              },
+            ),
+          )
           : const Center(
-        child: Text(
-          "Start adding dish...",
-          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w500),
-        ),
-      );
+              child: Text(
+                "Start adding dish...",
+                style: TextStyle(fontSize: 19, fontWeight: FontWeight.w500),
+              ),
+            );
     } else {
       return Center(
         child: loadingData(),
       );
     }
+  }
+
+  Widget categoryListWidget(String category, List<Dish> categoryList) {
+    return Column(
+      children: [
+        Text(category),
+        SizedBox(height: 16.0,),
+        ListView.builder(
+          shrinkWrap: true,
+            scrollDirection: Axis.vertical,
+            itemCount: categoryList.length,
+            itemBuilder: (context, itemPosition) {
+              return dishItem(categoryList[itemPosition]);
+            },
+          ),
+      ],
+    );
   }
 
   Widget dishItem(Dish dish) {
@@ -71,7 +95,8 @@ class DishesPage extends StatelessWidget {
           padding: EdgeInsets.only(left: 10),
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Text( //TODO make delayed delete
+            child: Text(
+              //TODO make delayed delete
               "Deleting",
               style: TextStyle(color: Colors.white),
             ),
@@ -84,29 +109,38 @@ class DishesPage extends StatelessWidget {
       direction: _dismissDirection,
       key: ObjectKey(dish),
       child: Card(
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.grey.shade200, width: 0.5),
-          borderRadius: BorderRadius.circular(5),
-        ),
-        color: Colors.white,
-        child: ListTile (contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-          title:  Text(dish.name,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),),
-          subtitle: GestureDetector(
-            child: Text(dish.description ?? "None", style: const TextStyle(decoration: TextDecoration.underline, color: Colors.blue)),
-            onTap: () async {
-              if (await launch(dish.description ?? "None")) throw 'Could not launch $dish.description';
-            },
-          )
-        )
-      ),
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: Colors.grey.shade200, width: 0.5),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          color: Colors.white,
+          child: ListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+              title: Text(
+                dish.name,
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+              ),
+              subtitle: GestureDetector(
+                child: Text(dish.url ?? "None",
+                    style: const TextStyle(
+                        decoration: TextDecoration.underline,
+                        color: Colors.blue)),
+                onTap: () async {
+                  if (await launch(dish.url ?? "None"))
+                    throw 'Could not launch $dish.description';
+                },
+              ))),
     );
     return dismissibleCard;
   }
 
   void addDishSheet(BuildContext context) {
+    //TODO a lot of copy-paste
     final _dishNameFormController = TextEditingController();
-    final _dishDescriptionFormController = TextEditingController();
+    final _dishUrlFormController = TextEditingController();
+    final _dishCategoryFormController = TextEditingController();
     showModalBottomSheet(
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(25.0))),
@@ -126,8 +160,8 @@ class DishesPage extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: 12.0),
                     child: Text(
                       'New dish',
-                        style: TextStyle(
-                            fontSize: 21, fontWeight: FontWeight.w400),
+                      style:
+                          TextStyle(fontSize: 21, fontWeight: FontWeight.w400),
                     ),
                   ),
                   const SizedBox(
@@ -144,31 +178,40 @@ class DishesPage extends StatelessWidget {
                   TextField(
                     decoration: const InputDecoration(hintText: 'URL'),
                     autofocus: true,
-                    controller: _dishDescriptionFormController,
+                    controller: _dishUrlFormController,
+                  ),
+                  const SizedBox(
+                    height: 8.0,
+                  ),
+                  TextField(
+                    decoration: const InputDecoration(hintText: 'Category'),
+                    autofocus: true,
+                    controller: _dishCategoryFormController,
                   ),
                   const SizedBox(
                     height: 8.0,
                   ),
                   Padding(
-                    padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom),
-                    child: Center(
-                      child: FloatingActionButton.extended(onPressed: () {
-                        final newDish = Dish(
-                            name: _dishNameFormController
-                                .value.text,
-                            description:
-                            _dishDescriptionFormController
-                                .value.text);
-                        if (newDish.name.isNotEmpty) {
-                          dishesBloc.addDish(newDish);
+                      padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom),
+                      child: Center(
+                        child: FloatingActionButton.extended(
+                            onPressed: () {
+                              final newDish = Dish(
+                                name: _dishNameFormController.value.text,
+                                url: _dishUrlFormController.value.text,
+                                category:
+                                    _dishCategoryFormController.value.text,
+                              );
+                              if (newDish.name.isNotEmpty) {
+                                dishesBloc.addDish(newDish);
 
-                          //dismisses the bottomsheet
-                          Navigator.pop(context);
-                        }
-                      }, label: const Text('add')),
-                    )
-                  ),
+                                //dismisses the bottomsheet
+                                Navigator.pop(context);
+                              }
+                            },
+                            label: const Text('add')),
+                      )),
                   const SizedBox(height: 10),
                 ],
               ),
