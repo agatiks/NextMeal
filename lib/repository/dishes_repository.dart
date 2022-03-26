@@ -8,6 +8,8 @@ class DishesRepository {
 
   Future getCategorizedDishes() => dishesDao.getCategorizedDishes();
 
+  Future<List<String>> getCategories() => dishesDao.getCategories();
+
   Future addDish(Dish dish) => dishesDao.addDish(dish);
 
   Future updateDish(Dish dish) => dishesDao.updateDish(dish);

@@ -17,6 +17,11 @@ class DishesBloc {
     _dishesController.sink.add(await _dishesRepository.getCategorizedDishes());
   }
 
+  Future<List<String>> getCategories() async{
+    print('******${_dishesRepository.getCategories().runtimeType}');
+    return _dishesRepository.getCategories();
+  }
+
   addDish(Dish dish) async {
     await _dishesRepository.addDish(dish);
     getDishes();

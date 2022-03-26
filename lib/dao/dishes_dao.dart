@@ -9,7 +9,7 @@ class DishesDao {
 
   Future<int> addDish(Dish dish) async {
     final db = await dbProvider.database;
-    var result = db.insert(dishesTABLE, dish.toDatabaseJson());
+    var result = db.insert(dishesTable, dish.toDatabaseJson());
     return result;
   }
 
@@ -18,7 +18,7 @@ class DishesDao {
       print(" Helo");
     }
     final db = await dbProvider.database;
-      var result = await db.query(dishesTABLE, columns: columns);
+      var result = await db.query(dishesTable, columns: columns);
       List<Dish> dishes = result.isNotEmpty
           ? result.map((item) => Dish.fromDatabaseJson(item)).toList()
           : [];
@@ -39,7 +39,7 @@ class DishesDao {
     List<String> categories = await getCategories();
     Map<String, List<Dish>> res = {};
     for (String category in categories) {
-      var rawCategoryDishes = await db.query(dishesTABLE,
+      var rawCategoryDishes = await db.query(dishesTable,
       columns: ['id', 'category', 'name', 'url'],
       where: 'category = ?',
       whereArgs: [category]);
@@ -54,7 +54,7 @@ class DishesDao {
   Future<int> updateDish(Dish dish) async {
     final db = await dbProvider.database;
 
-    var result = await db.update(dishesTABLE, dish.toDatabaseJson(),
+    var result = await db.update(dishesTable, dish.toDatabaseJson(),
         where: "id = ?", whereArgs: [dish.id]);
 
     return result;
@@ -62,7 +62,7 @@ class DishesDao {
 
   Future<int> deleteDish(int id) async {
     final db = await dbProvider.database;
-    var result = await db.delete(dishesTABLE, where: 'id = ?', whereArgs: [id]);
+    var result = await db.delete(dishesTable, where: 'id = ?', whereArgs: [id]);
     return result;
   }
 
@@ -70,7 +70,7 @@ class DishesDao {
   Future clearDishesDB() async {
     final db = await dbProvider.database;
     var result = await db.delete(
-      dishesTABLE,
+      dishesTable,
     );
     return result;
   }

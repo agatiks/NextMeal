@@ -6,7 +6,8 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-const dishesTABLE = 'Dishes';
+const dishesTable = 'Dishes';
+const categoriesTable = 'Categories';
 class DatabaseProvider {
   static final DatabaseProvider dbProvider = DatabaseProvider();
 
@@ -33,11 +34,16 @@ class DatabaseProvider {
   }
 
   void initDB(Database database, int version) async {
-    await database.execute("CREATE TABLE $dishesTABLE ("
+    await database.execute("CREATE TABLE $dishesTable ("
         "id INTEGER PRIMARY KEY, "
         "name TEXT, "
         "url TEXT, "
         "category TEXT"
+        ")");
+    await database.execute("CREATE TABLE $categoriesTable ("
+        "id INTEGER PRIMARY KEY, "
+        "category TEXT, "
+        "color TEXT, "
         ")");
   }
 }

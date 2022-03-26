@@ -10,6 +10,7 @@ class DishesPage extends StatelessWidget {
   DishesPage({Key? key}) : super(key: key);
 
   final DishesBloc dishesBloc = DishesBloc();
+
   final DismissDirection _dismissDirection = DismissDirection.horizontal;
 
   @override
@@ -204,6 +205,15 @@ class DishesPage extends StatelessWidget {
                   const SizedBox(
                     height: 8.0,
                   ),
+                  FloatingActionButton.extended(onPressed: () {
+                    String selected = selectingWindow(context, _dishCategoryFormController);
+                    _dishCategoryFormController.text = selected;
+                  },
+                    backgroundColor: Colors.purple.shade100,
+                      label: const Text('or select category'),),
+                  const SizedBox(
+                    height: 8.0,
+                  ),
                   Padding(
                       padding: EdgeInsets.only(
                           bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -329,5 +339,56 @@ class DishesPage extends StatelessWidget {
               ),
             ),
         context: context);
+  }
+
+  selectingWindow(BuildContext context, TextEditingController _dishCategoryFormController) {
+    showDialog(context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Select category'),
+          content: Container(
+            height: 300.0,
+            width: 300.0,
+            child: FutureBuilder(
+              future: dishesBloc.getCategories(),
+              builder: (context, AsyncSnapshot<List<String>> snapshot) {
+                if (snapshot.hasData) {
+                    return ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      itemCount: snapshot.data?.length ?? 1,
+                      itemBuilder: (context, itemPosition) {
+                        return categoryItem(
+                            context, snapshot.data![itemPosition], _dishCategoryFormController);
+                      },
+                    );
+                }
+                return loadingData();
+              }
+            ),
+          ),
+        ),);
+  }
+
+  Widget categoryItem(BuildContext context, String category, TextEditingController controller) {
+    final Widget card = Card(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Colors.grey.shade200, width: 0.5),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        color: Colors.purple.shade200,
+        child: InkWell(
+          onTap: () {
+            controller.text = category;
+            Navigator.pop(context);
+          },
+          child: ListTile(
+              contentPadding:
+              const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+              title: Text(
+                category,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w600, ),
+              ),
+        )));
+    return card;
   }
 }
