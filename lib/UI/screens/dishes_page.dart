@@ -1,10 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:next_meal/blocs/dishes_bloc.dart';
 import 'package:next_meal/models/dish.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class DishesPage extends StatelessWidget{
+class DishesPage extends StatelessWidget {
   DishesPage({Key? key}) : super(key: key);
 
   final DishesBloc dishesBloc = DishesBloc();
@@ -21,7 +23,8 @@ class DishesPage extends StatelessWidget{
   Widget dishesWidget() {
     return StreamBuilder(
       stream: dishesBloc.dishes,
-      builder: (BuildContext context, AsyncSnapshot<Map<String, List<Dish>>> snapshot) {
+      builder: (BuildContext context,
+          AsyncSnapshot<Map<String, List<Dish>>> snapshot) {
         return Column(
           children: [
             FloatingActionButton.extended(
@@ -39,17 +42,17 @@ class DishesPage extends StatelessWidget{
     if (snapshot.hasData) {
       return (snapshot.data!.isNotEmpty)
           ? Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              scrollDirection: Axis.vertical,
-              itemCount: snapshot.data?.length,
-              itemBuilder: (context, itemPosition) {
-                Map<String, List<Dish>> content = snapshot.data!;
-                String curKey = content.keys.toList()[itemPosition];
-                return categoryListWidget(curKey, content[curKey] ?? []);
-              },
-            ),
-          )
+              child: ListView.builder(
+                shrinkWrap: true,
+                scrollDirection: Axis.vertical,
+                itemCount: snapshot.data?.length,
+                itemBuilder: (context, itemPosition) {
+                  Map<String, List<Dish>> content = snapshot.data!;
+                  String curKey = content.keys.toList()[itemPosition];
+                  return categoryListWidget(curKey, content[curKey] ?? []);
+                },
+              ),
+            )
           : const Center(
               child: Text(
                 "Start adding dish...",
@@ -66,16 +69,27 @@ class DishesPage extends StatelessWidget{
   Widget categoryListWidget(String category, List<Dish> categoryList) {
     return Column(
       children: [
-        Text(category),
-        const SizedBox(height: 16.0,),
+        const SizedBox(
+          height: 8.0,
+        ),
+        Text(
+          category,
+          style: const TextStyle(
+              fontSize: 28,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w300),
+        ),
+        const SizedBox(
+          height: 8.0,
+        ),
         ListView.builder(
           shrinkWrap: true,
-            scrollDirection: Axis.vertical,
-            itemCount: categoryList.length,
-            itemBuilder: (context, itemPosition) {
-              return dishItem(context, categoryList[itemPosition]);
-            },
-          ),
+          scrollDirection: Axis.vertical,
+          itemCount: categoryList.length,
+          itemBuilder: (context, itemPosition) {
+            return dishItem(context, categoryList[itemPosition]);
+          },
+        ),
       ],
     );
   }
@@ -117,8 +131,8 @@ class DishesPage extends StatelessWidget{
                     const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                 title: Text(
                   dish.name,
-                  style:
-                      const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.w600),
                 ),
                 subtitle: GestureDetector(
                   child: Text(dish.url ?? "None",
@@ -236,81 +250,84 @@ class DishesPage extends StatelessWidget{
   }
 
   void updateDishSheet(BuildContext context, Dish dish) {
-      final _dishNameFormController = TextEditingController();
-      final _dishUrlFormController = TextEditingController();
-      final _dishCategoryFormController = TextEditingController();
-      showModalBottomSheet(
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25.0))),
-          backgroundColor: Colors.white,
-          isScrollControlled: true,
-          builder: (context) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const SizedBox(
-                  height: 16.0,
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Text(
-                    'Update dish',
-                    style:
-                    TextStyle(fontSize: 21, fontWeight: FontWeight.w400),
+    final _dishNameFormController = TextEditingController();
+    final _dishUrlFormController = TextEditingController();
+    final _dishCategoryFormController = TextEditingController();
+    showModalBottomSheet(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25.0))),
+        backgroundColor: Colors.white,
+        isScrollControlled: true,
+        builder: (context) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  const SizedBox(
+                    height: 16.0,
                   ),
-                ),
-                const SizedBox(
-                  height: 8.0,
-                ),
-                TextField(
-                  //initialValue: dish.name,
-                  autofocus: true,
-                  controller: _dishNameFormController..text = dish.name,
-                ),
-                const SizedBox(
-                  height: 8.0,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: 'URL'),
-                  autofocus: true,
-                  controller: _dishUrlFormController..text = dish.url ?? '',
-                ),
-                const SizedBox(
-                  height: 8.0,
-                ),
-                TextField(
-                  autofocus: true,
-                  controller: _dishCategoryFormController..text = dish.category,
-                ),
-                const SizedBox(
-                  height: 8.0,
-                ),
-                Padding(
-                    padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom),
-                    child: Center(
-                      child: FloatingActionButton.extended(
-                          onPressed: () {
-                            final newDish = Dish(
-                              name: _dishNameFormController.value.text,
-                              url: _dishUrlFormController.value.text,
-                              category:
-                              _dishCategoryFormController.value.text,
-                            );
-                            if (newDish.name.isNotEmpty && newDish.category.isNotEmpty) {
-                              dishesBloc.updateDish(newDish);
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12.0),
+                    child: Text(
+                      'Update dish',
+                      style:
+                          TextStyle(fontSize: 21, fontWeight: FontWeight.w400),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 8.0,
+                  ),
+                  TextField(
+                    //initialValue: dish.name,
+                    autofocus: true,
+                    controller: _dishNameFormController..text = dish.name,
+                  ),
+                  const SizedBox(
+                    height: 8.0,
+                  ),
+                  TextField(
+                    decoration: const InputDecoration(hintText: 'URL'),
+                    autofocus: true,
+                    controller: _dishUrlFormController..text = dish.url ?? '',
+                  ),
+                  const SizedBox(
+                    height: 8.0,
+                  ),
+                  TextField(
+                    autofocus: true,
+                    controller: _dishCategoryFormController
+                      ..text = dish.category,
+                  ),
+                  const SizedBox(
+                    height: 8.0,
+                  ),
+                  Padding(
+                      padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom),
+                      child: Center(
+                        child: FloatingActionButton.extended(
+                            onPressed: () {
+                              final newDish = Dish(
+                                name: _dishNameFormController.value.text,
+                                url: _dishUrlFormController.value.text,
+                                category:
+                                    _dishCategoryFormController.value.text,
+                              );
+                              if (newDish.name.isNotEmpty &&
+                                  newDish.category.isNotEmpty) {
+                                dishesBloc.updateDish(newDish);
 
-                              //dismisses the bottomsheet
-                              Navigator.pop(context);
-                            }
-                          },
-                          label: const Text('update')),
-                    )),
-                const SizedBox(height: 10),
-              ],
+                                //dismisses the bottomsheet
+                                Navigator.pop(context);
+                              }
+                            },
+                            label: const Text('update')),
+                      )),
+                  const SizedBox(height: 10),
+                ],
+              ),
             ),
-          ), context: context);
+        context: context);
   }
 }
