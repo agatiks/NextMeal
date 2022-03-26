@@ -2,19 +2,25 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:next_meal/UI/widgets/loading_data_widget.dart';
+import 'package:next_meal/UI/widgets/select_alert_dialog_widget.dart';
 import 'package:next_meal/blocs/dishes_bloc.dart';
+import 'package:next_meal/blocs/selected_categories_bloc.dart';
 import 'package:next_meal/models/dish.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DishesPage extends StatelessWidget {
-  DishesPage({Key? key}) : super(key: key);
+  final DishesBloc dishesBloc;
 
-  final DishesBloc dishesBloc = DishesBloc();
+  const DishesPage({Key? key, required this.dishesBloc}) : super(key: key);
 
   final DismissDirection _dismissDirection = DismissDirection.horizontal;
 
   @override
   Widget build(BuildContext context) {
+    //dishesBloc = Provider.of<DishesBloc>(context, listen: false);
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: dishesWidget(),
@@ -61,8 +67,8 @@ class DishesPage extends StatelessWidget {
               ),
             );
     } else {
-      return Center(
-        child: loadingData(),
+      return const Center(
+        child: LoadingDataWidget(),
       );
     }
   }
@@ -121,15 +127,15 @@ class DishesPage extends StatelessWidget {
       key: ObjectKey(dish),
       child: Card(
           shape: RoundedRectangleBorder(
-            side: BorderSide(color: Colors.grey.shade200, width: 0.5),
-            borderRadius: BorderRadius.circular(5),
+            side: BorderSide(color: Colors.grey.shade300, width: 0.5),
+            borderRadius: BorderRadius.circular(20),
           ),
           color: Colors.white,
           child: InkWell(
             onTap: () => updateDishSheet(context, dish),
             child: ListTile(
                 contentPadding:
-                    const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
                 title: Text(
                   dish.name,
                   style: const TextStyle(
@@ -197,20 +203,30 @@ class DishesPage extends StatelessWidget {
                   const SizedBox(
                     height: 8.0,
                   ),
-                  TextField(
-                    decoration: const InputDecoration(hintText: 'Category'),
-                    autofocus: true,
-                    controller: _dishCategoryFormController,
+                  Consumer<SelectedCategoriesBloc>(
+                    builder: (context, _bloc, child) => StreamBuilder(
+                      stream: _bloc.selectedItemStream,
+                      builder: (context, snapshot) {
+                        return TextField(
+                          decoration:
+                              const InputDecoration(hintText: 'Category'),
+                          autofocus: true,
+                          controller: _dishCategoryFormController
+                            ..text = snapshot.data?.toString() ?? '',
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(
                     height: 8.0,
                   ),
-                  FloatingActionButton.extended(onPressed: () {
-                    String selected = selectingWindow(context, _dishCategoryFormController);
-                    _dishCategoryFormController.text = selected;
-                  },
+                  FloatingActionButton.extended(
+                    onPressed: () {
+                      showSelectDialog(context);
+                    },
                     backgroundColor: Colors.purple.shade100,
-                      label: const Text('or select category'),),
+                    label: const Text('or select category'),
+                  ),
                   const SizedBox(
                     height: 8.0,
                   ),
@@ -239,20 +255,6 @@ class DishesPage extends StatelessWidget {
                 ],
               ),
             ));
-  }
-
-  Widget loadingData() {
-    dishesBloc.getDishes();
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const <Widget>[
-          CircularProgressIndicator(),
-          Text("Loading...",
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w500))
-        ],
-      ),
-    );
   }
 
   dispose() {
@@ -341,54 +343,9 @@ class DishesPage extends StatelessWidget {
         context: context);
   }
 
-  selectingWindow(BuildContext context, TextEditingController _dishCategoryFormController) {
-    showDialog(context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Select category'),
-          content: Container(
-            height: 300.0,
-            width: 300.0,
-            child: FutureBuilder(
-              future: dishesBloc.getCategories(),
-              builder: (context, AsyncSnapshot<List<String>> snapshot) {
-                if (snapshot.hasData) {
-                    return ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      itemCount: snapshot.data?.length ?? 1,
-                      itemBuilder: (context, itemPosition) {
-                        return categoryItem(
-                            context, snapshot.data![itemPosition], _dishCategoryFormController);
-                      },
-                    );
-                }
-                return loadingData();
-              }
-            ),
-          ),
-        ),);
-  }
-
-  Widget categoryItem(BuildContext context, String category, TextEditingController controller) {
-    final Widget card = Card(
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.grey.shade200, width: 0.5),
-          borderRadius: BorderRadius.circular(5),
-        ),
-        color: Colors.purple.shade200,
-        child: InkWell(
-          onTap: () {
-            controller.text = category;
-            Navigator.pop(context);
-          },
-          child: ListTile(
-              contentPadding:
-              const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-              title: Text(
-                category,
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w600, ),
-              ),
-        )));
-    return card;
+  String? showSelectDialog(
+      BuildContext context) {
+    showDialog(
+        context: context, builder: (_) => const SelectAlertDialogWidget());
   }
 }

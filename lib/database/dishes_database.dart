@@ -40,10 +40,5 @@ class DatabaseProvider {
         "url TEXT, "
         "category TEXT"
         ")");
-    await database.execute("CREATE TABLE $categoriesTable ("
-        "id INTEGER PRIMARY KEY, "
-        "category TEXT, "
-        "color TEXT, "
-        ")");
   }
 }

@@ -18,7 +18,6 @@ class DishesBloc {
   }
 
   Future<List<String>> getCategories() async{
-    print('******${_dishesRepository.getCategories().runtimeType}');
     return _dishesRepository.getCategories();
   }
 

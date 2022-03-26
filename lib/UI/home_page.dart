@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:next_meal/UI/screens/dishes_page.dart';
 import 'package:next_meal/UI/screens/generate_page.dart';
 import 'package:next_meal/UI/screens/personal_page.dart';
+import 'package:next_meal/blocs/dishes_bloc.dart';
 import 'package:next_meal/blocs/events/selected_item_event.dart';
 import 'package:next_meal/blocs/navigation_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 class HomePage extends StatelessWidget {
@@ -60,15 +62,19 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
-            body: getBody(int.parse(snapshot.data.toString())),
+            body: Consumer<DishesBloc>(
+              builder: (context, _dishesBloc, child) {
+                return getBody(int.parse(snapshot.data.toString()), _dishesBloc);
+              },
+            ),
           );
         }
     );
   }
 
-  getBody(int item) {
+  getBody(int item, DishesBloc bloc) { //TODO: BAd architecture,
     if (item == 0) {
-      return DishesPage();
+      return DishesPage( dishesBloc: bloc,);
     } else if (item == 1) {
       return GeneratePage();
     } else{
